@@ -9,7 +9,7 @@ pub fn parse_bitmap_8x8(lines: [&str; 8]) -> [u8; 8] {
         let mut line_buff: u8 = 0b0000_0000;
         for (char_index, char) in line.chars().enumerate() {
             match char {
-                '#' => line_buff |= 1 << char_index,
+                '#' => line_buff |= 1 << (7 - char_index),
                 _ => continue,
             };
         }
@@ -22,7 +22,7 @@ pub fn render_bitmap_8x8(bytes: [u8; 8]) -> [String; 8] {
     bytes.map(|byte| {
         let mut line = String::with_capacity(8);
         for i in 0..8 {
-            let symbol = match (byte >> i) & 1 {
+            let symbol = match (byte >> (7 - i)) & 1 {
                 1 => '#',
                 _ => '.',
             };
@@ -135,5 +135,26 @@ mod tests {
         ];
 
         assert_eq!(invert_image, control_image);
+    }
+
+    #[test]
+    fn test_parse_asymmetric() {
+        // Given
+        let image = [
+            "#.......",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+        ];
+
+        // When
+        let bytes = parse_bitmap_8x8(image);
+
+        // Then
+        assert_eq!(bytes[0], 0b1000_0000);
     }
 }

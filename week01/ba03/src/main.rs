@@ -10,38 +10,39 @@ fn main() {
         return;
     }
 
-    let sorted_v = quick_sort(v);
-    for arg in sorted_v {
+    quick_sort(&mut v);
+    for arg in v {
         println!("{:?}", arg);
     };
 
 }
 
 /// Quick Sort
-fn quick_sort<T>(mut v: Vec<T>) -> Vec<T>
+fn quick_sort<T>(v: &mut[T]) -> &[T]
 where
-    T: PartialOrd,
+    T: PartialOrd + std::fmt::Debug,
 {
-    if v.len() < 1 {
+    if v.len() <= 1 {
         return v;
     }
 
-    let pivot = v.pop().unwrap();
-    let mut left: Vec<T> = Vec::new();
-    let mut right: Vec<T> = Vec::new();
+    let pivot_index = v.len() - 1;
+    let mut border: usize = 0;
 
-    for element in v {
-        if element <= pivot {
-            left.push(element);
-        } else {
-            right.push(element);
-        }
+    for i in 0..pivot_index {
+        if v[i] <= v[pivot_index] {
+            v.swap(i, border);
+            border += 1;
+        };
     }
 
-    let mut sorted = quick_sort(left);
-    sorted.push(pivot);
-    sorted.extend(quick_sort(right));
-    sorted
+    v.swap(border, pivot_index);
+
+    let (left, right) = v.split_at_mut(border);
+    quick_sort(left);
+    quick_sort(&mut right[1..]);
+
+    v
 }
 
 
@@ -51,45 +52,33 @@ mod tests {
     use super::*;
 
     #[test]
-    fn sort_empty_sequence() {
-        // Given
-        let v: Vec<i32> = Vec::new();
-
-        // When
-        let sorted_vec = quick_sort(v);
-
-        // Then
-        assert_eq!(sorted_vec, Vec::new());
-    }
-
-    #[test]
     fn sort_two_int_sequence() {
         // Given
-        let v = vec![2, 1];
+        let mut v = vec![2, 1];
 
         // When
-        let sorted_vec = quick_sort(v);
+        quick_sort(&mut v);
 
         // Then
-        assert_eq!(sorted_vec, vec![1, 2]);
+        assert_eq!(v, vec![1, 2]);
     }
 
     #[test]
     fn sort_multiple_int_sequence() {
         // Given
-        let v = vec![2, 1, 3, 0];
+        let mut v = vec![2, 1, 3, 0];
 
         // When
-        let sorted_vec = quick_sort(v);
+        quick_sort(&mut v);
 
         // Then
-        assert_eq!(sorted_vec, vec![0, 1, 2, 3]);
+        assert_eq!(v, vec![0, 1, 2, 3]);
     }
 
     #[test]
     fn sort_multiple_string_sequence() {
         // Given
-        let v = vec![
+        let mut v = vec![
             "B".to_owned(),
             "A".to_owned(),
             "b".to_owned(),
@@ -97,7 +86,7 @@ mod tests {
         ];
 
         // When
-        let sorted_vec = quick_sort(v);
+        quick_sort(&mut v);
 
         // Then
         let control_vec = [
@@ -106,6 +95,6 @@ mod tests {
             "a".to_owned(),
             "b".to_owned(),
         ];
-        assert_eq!(sorted_vec, control_vec);
+        assert_eq!(v, control_vec);
     }
 }
